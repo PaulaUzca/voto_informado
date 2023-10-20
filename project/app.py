@@ -3,7 +3,7 @@ from change_dataset import remove_nan
 import pandas as pd
 
 # Replace 'your_file.csv' with the path to your CSV file
-csv_file = '../resources/data_nice.csv'
+csv_file = 'resources/data_nice.csv'
 
 app = Flask(__name__)
 
