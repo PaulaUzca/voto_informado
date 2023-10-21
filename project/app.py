@@ -2,11 +2,12 @@ from flask import Flask, jsonify, request
 from change_dataset import remove_nan
 import pandas as pd
 from flask_cors import CORS
+from pathlib import Path
 
 
-# Replace 'your_file.csv' with the path to your CSV file
-csv_file = 'resources/data_nice.csv'
-#csv_file = '/home/pauzca/project/resources/data_nice.csv'
+THIS_FOLDER = Path(__file__).parent.resolve()
+csv_file = THIS_FOLDER / 'resources/data_nice.csv'
+print(csv_file)
 
 app = Flask(__name__)
 
