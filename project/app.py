@@ -1,13 +1,10 @@
 from flask import Flask, jsonify, request
 from change_dataset import remove_nan
 import pandas as pd
-from flask_cors import CORS
 from pathlib import Path
 
 
 app = Flask(__name__)
-
-CORS(app, resources={r"/*": {"origins": "*"}})
 
 THIS_FOLDER = Path(__file__).parent.resolve()
 csv_file = THIS_FOLDER / 'static/data_nice.csv'
@@ -25,7 +22,10 @@ def hello_world():
 @app.route('/departamentos')
 def get_departamentos():
     departamentos = remove_nan(df['Descripción del Departamento'].unique())
-    return jsonify(departamentos)
+
+    response = jsonify(message = departamentos)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @app.route('/municipios')
 def get_municipios():
@@ -33,13 +33,17 @@ def get_municipios():
     cargo = request.args.get('cargo') 
     municipios = remove_nan(df[df['Descripción del Departamento'] == departamento][df['Descripción de la Corporación/Cargo'] == cargo]
                             ['Descripción del Municipio'].unique())
-    return jsonify(municipios)
+    response = jsonify(municipios)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @app.route('/cargos')
 def get_cargos():
     departamento = request.args.get('departamento') 
     cargos = remove_nan(df[df['Descripción del Departamento'] == departamento]['Descripción de la Corporación/Cargo'].unique())
-    return jsonify(cargos)
+    response = jsonify(cargos)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @app.route('/consultar')
 def example():
@@ -53,9 +57,11 @@ def example():
         c = df[(df['Descripción del Departamento'] == departamento) & (df['Descripción de la Corporación/Cargo'] == cargo) & (df['Descripción del Municipio'] == municipio)]
         
     if c.empty == False:
-        return jsonify(c['nombresApellidos'].values.tolist())
+        response =  jsonify(c['nombresApellidos'].values.tolist())
     else:
-        return []
+        response =  []
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 if __name__ == '__main__':
