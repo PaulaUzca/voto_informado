@@ -1,8 +1,11 @@
 from flask import Flask, jsonify, request
-from change_dataset import remove_nan
-import pandas as pd
 from pathlib import Path
+import pandas as pd
 
+from change_dataset import remove_nan
+from news_scrapping import search_person_news
+from jorge import cargosAspirado
+from sodapy import Socrata
 
 app = Flask(__name__)
 
@@ -45,8 +48,8 @@ def get_cargos():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
-@app.route('/consultar')
-def example():
+@app.route('/consultar/all')
+def consultar_personas():
     departamento = request.args.get('departamento') 
     cargo = request.args.get('cargo')  
     municipio = request.args.get('municipio') 
@@ -64,5 +67,74 @@ def example():
     return response
 
 
+@app.route('/consultar/persona')
+def get_persona():
+    nombre = request.args.get('nombre')
+    persona = df[df['nombresApellidos'] == nombre]
+    dto = {
+        "nombres": persona['nombresApellidos'].values[0],
+        "cargo": persona['Descripción de la Corporación/Cargo'].values[0],
+        "departamento": persona['Descripción del Departamento'].values[0],
+        "municipio": persona['Descripción del Municipio'].values[0],
+        "tipo_agrupacion": persona['Descripción del Tipo de Agrupación Política'].values[0],
+        "partido": persona['Nombre de la Agrupación Política'].values[0],
+        "candidaturas": {
+            "info": cargosAspirado(nombre),
+        },
+    }
+    response = jsonify(dto)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+@app.route('/noticias')
+def noticias():
+    nombre = request.args.get('nombre')
+    news = search_person_news(nombre)
+    response = jsonify([{
+        "contenido": news,
+        "size": len(news)
+        }])
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+
+""" 
+    "candidaturas": {
+            "info": [{
+                "cargo":
+                "veces":
+            }],
+            "detalle": [{
+                "cargo":
+                "año":
+            }]
+        },
+        "contratos": {
+            "info": [
+                {
+                    "entidad":
+                    "monto":
+                    "num_contratos"
+                }
+            ],
+            "detalle": [{
+                "entidad":
+                "monto"
+                "año"
+            }],
+            "hallazgos":[
+                "simultaneo": {
+                    "num_contratos":
+                    "ids":[]
+                },
+            ],
+            "inhabilita": [{
+                    "num_contratos":
+                    "ids":
+                }]
+        }, """
