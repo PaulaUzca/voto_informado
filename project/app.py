@@ -1,11 +1,16 @@
 from flask import Flask, jsonify, request
 from change_dataset import remove_nan
 import pandas as pd
+from flask_cors import CORS
+
 
 # Replace 'your_file.csv' with the path to your CSV file
 csv_file = 'resources/data_nice.csv'
+#csv_file = '/home/pauzca/project/resources/data_nice.csv'
 
 app = Flask(__name__)
+
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 df = pd.read_csv(csv_file, encoding = "iso-8859-1")
 
