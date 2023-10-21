@@ -5,14 +5,12 @@ from flask_cors import CORS
 from pathlib import Path
 
 
-THIS_FOLDER = Path(__file__).parent.resolve()
-csv_file = THIS_FOLDER / 'resources/data_nice.csv'
-print(csv_file)
-
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+THIS_FOLDER = Path(__file__).parent.resolve()
+csv_file = THIS_FOLDER / 'static/data_nice.csv'
 df = pd.read_csv(csv_file, encoding = "iso-8859-1")
 
 #Sin los cargos de juntas administradoras locales porque no nos vamos a poner a buscar por comuna
