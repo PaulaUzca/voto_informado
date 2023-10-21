@@ -3,7 +3,7 @@ from sodapy import Socrata
 from pathlib import Path
 import pandas as pd
 
-client = Socrata("www.datos.gov.co", None)
+client = Socrata("www.datos.gov.co", "GZkG1KvXYiXI86YBJKHrDbhl4")
 
 THIS_FOLDER = Path(__file__).parent.resolve()
 csv_file = THIS_FOLDER / 'static/data_nice2.csv'
@@ -22,11 +22,67 @@ def cargosAspirado(Nombre):
         return cargo_counts
     else:
         return []
-    
 
-    """ if not filtered_df.empty:
-        cargo_counts = filtered_df['Cargo Counts'].iloc[0]
-        return jsonify(cargo_counts)
-    else:
-        return jsonify({"error": "Nombre not found in the DataFrame"}), 404
- """
+
+def display_contracts_with_number(number):
+    params = {
+        "$select": "nombre_entidad, id_contrato, tipo_de_contrato, modalidad_de_contratacion, fecha_de_firma, fecha_de_fin_del_contrato, valor_del_contrato, objeto_del_contrato, departamento, ciudad, urlproceso",
+        "$where": f"fecha_de_firma >= '2022-10-30T00:00:00' AND (documento_proveedor = '{number}' OR identificaci_n_representante_legal = '{number}')",
+        "$limit": 100
+    }
+
+    results = client.get("jbjy-vk9h", **params)
+    return results
+
+def display_entities(number):
+    params2 = {
+        "$select": "nombre_entidad, fecha_de_firma, count(id_contrato) as Numero_de_Contratos, sum(valor_del_contrato) as Valor_Total",
+        "$where": f"documento_proveedor = '{number}' OR identificaci_n_representante_legal = '{number}'",
+        "$group": "nombre_entidad, fecha_de_firma",
+        "$order": "Valor_Total DESC",
+        "$limit": 100
+    }
+
+    results2 = client.get("jbjy-vk9h", **params2)
+
+    return results2
+
+
+
+def get_overlapping_contracts(number):
+    # Assuming you've initialized your Socrata client as client somewhere
+    
+    # Define the query parameters to find overlapping contracts
+    params3 = {
+        "$select": "id_contrato, tipo_de_contrato, modalidad_de_contratacion, fecha_de_firma, fecha_de_inicio_del_contrato, fecha_de_fin_del_contrato, valor_del_contrato",
+        "$where": f"(documento_proveedor = '{number}' OR identificaci_n_representante_legal = '{number}')",
+        "$limit": 100
+    }
+
+    # Retrieve the contracts data based on the modified query
+    results3 = client.get("jbjy-vk9h", **params3)
+
+    # Convert to pandas DataFrame
+    results_df3 = pd.DataFrame.from_records(results3)
+
+    max_overlap = 0
+    max_overlap_ids = []
+
+    for _, contract in results_df3.iterrows():
+        overlap_condition = (
+            (contract['fecha_de_inicio_del_contrato'] <= results_df3['fecha_de_fin_del_contrato']) & 
+            (contract['fecha_de_fin_del_contrato'] >= results_df3['fecha_de_inicio_del_contrato'])
+        )
+        
+        overlapping_ids = results_df3[overlap_condition]['id_contrato'].tolist()
+        
+        if len(overlapping_ids) > max_overlap:
+            max_overlap = len(overlapping_ids)
+            max_overlap_ids = overlapping_ids
+
+    response = {
+        "message": f"El número maximo de contratos que ha tenido esta persona al tiempo son: {max_overlap}",
+        "contract_ids": max_overlap_ids
+    }
+    
+    return response

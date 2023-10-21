@@ -4,7 +4,7 @@ import pandas as pd
 
 from change_dataset import remove_nan
 from news_scrapping import search_person_news
-from jorge import cargosAspirado
+import jorge 
 from sodapy import Socrata
 
 app = Flask(__name__)
@@ -71,6 +71,22 @@ def consultar_personas():
 def get_persona():
     nombre = request.args.get('nombre')
     persona = df[df['nombresApellidos'] == nombre]
+    number = persona['Número de Cédula de Ciudadanía'].values[0]
+    # Group by 'nombre_etidad' and sum the other two columns
+    result = jorge.display_entities(number)
+    aggregated_df = result.groupby('nombre_etidad').agg({
+        'Numero_de_Contractos': 'sum',
+        'Valor_Total': 'sum'
+    }).reset_index()
+
+    # Extract the year from the 'fecha' column and create a new 'year' column
+    result['year'] = result['fecha_de_firma'].str[:4]
+    # Group by 'nombre_etidad' and 'year', and sum the other columns
+    aggregated_df2 = result.groupby(['nombre_etidad', 'year']).agg({
+          'Numero_de_Contractos': 'sum',
+        'Valor_Total': 'sum'
+    }).reset_index()
+
     dto = {
         "nombres": persona['nombresApellidos'].values[0],
         "cargo": persona['Descripción de la Corporación/Cargo'].values[0],
@@ -79,8 +95,20 @@ def get_persona():
         "tipo_agrupacion": persona['Descripción del Tipo de Agrupación Política'].values[0],
         "partido": persona['Nombre de la Agrupación Política'].values[0],
         "candidaturas": {
-            "info": cargosAspirado(nombre),
+            "info": jorge.cargosAspirado(nombre),
         },
+        "contratos":{
+            "info": aggregated_df,
+            "detalle":  aggregated_df2,
+            "hallazgos": jorge.get_overlapping_contracts(number),
+            "inhabilita": jorge.display_contracts_with_number(number)
+            
+        }
+
+
+        }, """
+
+        
     }
     response = jsonify(dto)
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -104,37 +132,3 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 """ 
-    "candidaturas": {
-            "info": [{
-                "cargo":
-                "veces":
-            }],
-            "detalle": [{
-                "cargo":
-                "año":
-            }]
-        },
-        "contratos": {
-            "info": [
-                {
-                    "entidad":
-                    "monto":
-                    "num_contratos"
-                }
-            ],
-            "detalle": [{
-                "entidad":
-                "monto"
-                "año"
-            }],
-            "hallazgos":[
-                "simultaneo": {
-                    "num_contratos":
-                    "ids":[]
-                },
-            ],
-            "inhabilita": [{
-                    "num_contratos":
-                    "ids":
-                }]
-        }, """
