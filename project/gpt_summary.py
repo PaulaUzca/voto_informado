@@ -29,7 +29,7 @@ def get_chatgpt_response(dump_json):
         - Mention this tool's educational intent and no political biases.
 
         ## Instructions
-        1. Begin by stating the summary uses web-scraped data.
+        1. Begin by stating the summary uses web-scraped data but don't mention the JSON file.
         2. Outline the candidate's qualifications and achievements.
         3. Mention negative news and specifics.
         4. If data lacks, mention the insufficiency.
@@ -41,7 +41,7 @@ def get_chatgpt_response(dump_json):
     # Instruction message
     instruction_message = {
         "role": "user",
-        "content": f"""Analyze the provided JSON data related to the candidate "name."
+        "content": f"""Analyze the provided JSON data related to the candidate
         - Extract relevant details about the candidate for the Colombian elections, highlighting both achievements and negative news.
         - Summarize the candidate in a balanced manner.
         - Ensure data cleanliness, correct or ignore inconsistencies.
