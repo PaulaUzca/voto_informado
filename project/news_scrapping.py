@@ -7,7 +7,7 @@ import json
 from bs4 import BeautifulSoup
 
 # Your Google API Key and Search Engine ID
-API_KEY = 'AIzaSyB1zDMB5Qqoiqdv1aaeUfOnmha8aaCiGZA'
+API_KEY = ''
 SEARCH_ENGINE_ID = '712aa8d8095714211'
 def google_search_to_queue(query, additional_keywords=[], language="es", country="CO", num_results=10):
     compound_query = query + ' + ' + ' OR '.join(additional_keywords)
