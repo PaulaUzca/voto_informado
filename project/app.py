@@ -75,18 +75,27 @@ def get_persona():
     number = persona['Número de Cédula de Ciudadanía'].values[0]
     # Group by 'nombre_etidad' and sum the other two columns
     result = jorge.display_entities(number)
-    aggregated_df = result.groupby('nombre_etidad').agg({
-        'Numero_de_Contractos': 'sum',
-        'Valor_Total': 'sum'
-    }).reset_index()
+    if len(result):
+        aggregated_df = result.groupby('nombre_etidad').agg({
+            'Numero_de_Contractos': 'sum',
+            'Valor_Total': 'sum'
+        }).reset_index()
 
-    # Extract the year from the 'fecha' column and create a new 'year' column
-    result['year'] = result['fecha_de_firma'].str[:4]
-    # Group by 'nombre_etidad' and 'year', and sum the other columns
-    aggregated_df2 = result.groupby(['nombre_etidad', 'year']).agg({
-          'Numero_de_Contractos': 'sum',
-        'Valor_Total': 'sum'
-    }).reset_index()
+        # Extract the year from the 'fecha' column and create a new 'year' column
+        result['year'] = result['fecha_de_firma'].str[:4]
+        # Group by 'nombre_etidad' and 'year', and sum the other columns
+        aggregated_df2 = result.groupby(['nombre_etidad', 'year']).agg({
+            'Numero_de_Contractos': 'sum',
+            'Valor_Total': 'sum'
+        }).reset_index()
+        contratos = {
+            "info": aggregated_df,
+            "detalle":  aggregated_df2,
+            "hallazgos": jorge.get_overlapping_contracts(number),
+            "inhabilita": jorge.display_contracts_with_number(number)
+        }
+    else:
+        contratos = {}
 
     dto = {
         "nombres": persona['nombresApellidos'].values[0],
@@ -98,24 +107,12 @@ def get_persona():
         "candidaturas": {
             "info": jorge.cargosAspirado(nombre),
         },
-        "contratos":{
-            "info": aggregated_df,
-            "detalle":  aggregated_df2,
-            "hallazgos": jorge.get_overlapping_contracts(number),
-            "inhabilita": jorge.display_contracts_with_number(number)
-            
-        }
-
-
-        }, """
-
-        
-    }
+        "contratos":contratos
+    } 
     response = jsonify(dto)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
-
-
+    
 @app.route('/noticias')
 def noticias():
     nombre = request.args.get('nombre')
@@ -140,8 +137,10 @@ def get_summary():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
-
+    
 if __name__ == '__main__':
     app.run(debug=True)
 
-""" 
+    
+
+
