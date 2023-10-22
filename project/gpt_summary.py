@@ -2,9 +2,9 @@ import openai
 
 def get_chatgpt_response(dump_json):
     # Initialize OpenAI API key
-    api_key = "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"
-    #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 / new
-    #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 / old
+    api_key = ""
+    # / new
+    # / old
     # Initialize GPT model to be used, either "gpt-3.5-turbo" for GPT-3.5 or the equivalent for GPT-4
     model_engine = "gpt-3.5-turbo"
     #gpt-4 / expensive
