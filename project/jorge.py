@@ -86,13 +86,15 @@ def get_overlapping_contracts(number):
         
         overlapping_ids = results_df3[overlap_condition]['id_contrato'].tolist()
         
-        if len(overlapping_ids) > max_overlap:
-            max_overlap = len(overlapping_ids)
-            max_overlap_ids = overlapping_ids
+    if max_overlap_ids !=1:
+        response = {
+            "message": f"El número maximo de contratos que ha tenido esta persona al tiempo son: {max_overlap}",
+            "contract_ids": max_overlap_ids
+        }
+    else:
+        response = {
+            "message: La persona solo tiene un contrato al tiempo"
+        }
 
-    response = {
-        "message": f"El número maximo de contratos que ha tenido esta persona al tiempo son: {max_overlap}",
-        "contract_ids": max_overlap_ids
-    }
     
     return response
