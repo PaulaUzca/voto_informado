@@ -64,7 +64,7 @@ def recursive_scrape(url, query, visited_urls, scraped_data, url_queue):
     scraped_data.append({
         'url': url,
         'title': page_title,
-        'body': cleaned_body,
+        'body': cleaned_body[:1000],
     })
 
     for tag in main_content_tags:
@@ -85,13 +85,14 @@ def search_person_news(person_name):
 
     # Test the function with compound query
     search_query = person_name
-
-    url_queue = google_search_to_queue(search_query, additional_keywords=additional_keywords, language='es', country='CO', num_results=10)
+    N=16
+    url_queue = google_search_to_queue(search_query, additional_keywords=additional_keywords, language='es', country='CO', num_results=int(N/2))
     count = 0
-    print(url_queue)
+    #print(url_queue)
     start_time = time.time()
+    
     # Then recursively scrape the URLs
-    while url_queue and count <=20:
+    while url_queue and count <=N:
         url_to_scrape = url_queue.popleft()
         recursive_scrape(url_to_scrape, search_query, visited_urls, scraped_data, url_queue)
         count += 1

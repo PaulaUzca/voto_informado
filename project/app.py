@@ -1,9 +1,10 @@
 from flask import Flask, jsonify, request
 from pathlib import Path
 import pandas as pd
-
+import json
 from change_dataset import remove_nan
 from news_scrapping import search_person_news
+from gpt_summary import get_chatgpt_response
 from jorge import cargosAspirado
 from sodapy import Socrata
 
@@ -92,12 +93,24 @@ def noticias():
     nombre = request.args.get('nombre')
     news = search_person_news(nombre)
     response = jsonify([{
-        "contenido": news,
-        "size": len(news)
+        "contenido": news
         }])
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+@app.route('/resumen')
+def get_summary():
+    nombre = request.args.get('nombre')
+    news = search_person_news(nombre)
+    news_txt = json.dumps(news, indent=4, ensure_ascii=False)
+    print(len(news_txt))
+    summary = get_chatgpt_response(news_txt)
+    response = jsonify([{
+        "news": news,
+        "summary": summary
+        }])
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 if __name__ == '__main__':
