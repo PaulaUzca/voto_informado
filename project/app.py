@@ -74,7 +74,7 @@ def get_persona():
     persona = df[df['nombresApellidos'] == nombre]
     number = persona['Número de Cédula de Ciudadanía'].values[0]
     # Group by 'nombre_etidad' and sum the other two columns
-    
+
     result = jorge.display_entities(number)
     contratos = {
         "entities": jorge.display_entities(number),
@@ -103,7 +103,9 @@ def get_persona():
 @app.route('/filter')
 def filter():
     departamento = request.args.get('departamento') 
-    filterData = jorge.filter_contracts(departamento)
+    ciudad = request.args.get('ciudad') 
+    filterData = jorge.filter_contracts(departamento, ciudad)
+    print(filterData)
     response = jsonify(filterData)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
