@@ -4,12 +4,8 @@ import pandas as pd
 import json
 from change_dataset import remove_nan
 from news_scrapping import search_person_news
-<<<<<<< HEAD
 from gpt_summary import get_chatgpt_response
-from jorge import cargosAspirado
-=======
 import jorge 
->>>>>>> b64a038644d6933084c130b95d175bc15d9752b2
 from sodapy import Socrata
 
 app = Flask(__name__)
