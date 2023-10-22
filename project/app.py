@@ -75,27 +75,12 @@ def get_persona():
     number = persona['Número de Cédula de Ciudadanía'].values[0]
     # Group by 'nombre_etidad' and sum the other two columns
     result = jorge.display_entities(number)
-    if len(result):
-        aggregated_df = result.groupby('nombre_etidad').agg({
-            'Numero_de_Contractos': 'sum',
-            'Valor_Total': 'sum'
-        }).reset_index()
-
-        # Extract the year from the 'fecha' column and create a new 'year' column
-        result['year'] = result['fecha_de_firma'].str[:4]
-        # Group by 'nombre_etidad' and 'year', and sum the other columns
-        aggregated_df2 = result.groupby(['nombre_etidad', 'year']).agg({
-            'Numero_de_Contractos': 'sum',
-            'Valor_Total': 'sum'
-        }).reset_index()
-        contratos = {
-            "info": aggregated_df,
-            "detalle":  aggregated_df2,
-            "hallazgos": jorge.get_overlapping_contracts(number),
-            "inhabilita": jorge.display_contracts_with_number(number)
-        }
-    else:
-        contratos = {}
+    contratos = {
+        "entities": jorge.display_entities(number),
+        "hallazgos": jorge.get_overlapping_contracts(number),
+        "inhabilita": jorge.display_contracts_with_number(number)
+    }
+    
 
     dto = {
         "nombres": persona['nombresApellidos'].values[0],
@@ -113,6 +98,16 @@ def get_persona():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
     
+
+@app.route('/filter')
+def filter():
+    departamento = request.args.get('departamento') 
+    filterData = jorge.filter_contracts(departamento)
+    response = jsonify(filterData)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
 @app.route('/noticias')
 def noticias():
     nombre = request.args.get('nombre')

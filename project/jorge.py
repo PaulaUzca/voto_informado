@@ -47,7 +47,17 @@ def display_entities(number):
 
     return results2
 
+def filter_contracts(departamento):
+    params2 = {
+        "$select": "documento_proveedor, identificaci_n_representante_legal, nombre_representante_legal, count(id_contrato) as Numero_de_Contratos, sum(valor_del_contrato) as Valor_Total, departamento, ciudad",
+        "$where": f"fecha_de_firma >= '2022-10-30T00:00:00' AND departamento= '{departamento}'",
+        "$group": "documento_proveedor, identificaci_n_representante_legal, nombre_representante_legal, departamento, ciudad",
+        "$limit": 100
+    }
 
+    results2 = client.get("jbjy-vk9h", **params2)
+
+    return results2
 
 def get_overlapping_contracts(number):
     # Assuming you've initialized your Socrata client as client somewhere
