@@ -47,13 +47,14 @@ def display_entities(number):
 
     return results2
 
-def filter_contracts(departamento):
+def filter_contracts(departamento,ciudad):
     params2 = {
-        "$select": "documento_proveedor, identificaci_n_representante_legal, nombre_representante_legal, count(id_contrato) as Numero_de_Contratos, sum(valor_del_contrato) as Valor_Total, departamento, ciudad",
-        "$where": f"fecha_de_firma >= '2022-10-30T00:00:00' AND departamento= '{departamento}'",
-        "$group": "documento_proveedor, identificaci_n_representante_legal, nombre_representante_legal, departamento, ciudad",
+        "$select": "UPPER(nombre_representante_legal), count(id_contrato) as Numero_de_Contratos",
+        "$where": f"fecha_de_firma >= '2022-10-30T00:00:00' AND departamento= '{departamento}' AND ciudad= '{ciudad}'",
+        "$group": "nombre_representante_legal",
         "$limit": 100
     }
+
 
     results2 = client.get("jbjy-vk9h", **params2)
 
@@ -86,13 +87,15 @@ def get_overlapping_contracts(number):
         
         overlapping_ids = results_df3[overlap_condition]['id_contrato'].tolist()
         
-        if len(overlapping_ids) > max_overlap:
-            max_overlap = len(overlapping_ids)
-            max_overlap_ids = overlapping_ids
+    if max_overlap_ids !=1:
+        response = {
+            "message": f"El número maximo de contratos que ha tenido esta persona al tiempo son: {max_overlap}",
+            "contract_ids": max_overlap_ids
+        }
+    else:
+        response = {
+            "message: La persona solo tiene un contrato al tiempo"
+        }
 
-    response = {
-        "message": f"El número maximo de contratos que ha tenido esta persona al tiempo son: {max_overlap}",
-        "contract_ids": max_overlap_ids
-    }
     
     return response
